@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import CustomDropdown from "./CustomDropdown";
 import { fetchChannels } from "../services/apiService";
+import LoadingIndicator from "./LoadingIndicator";
 
 interface WithdrawAmountProps {
   amount: string;
@@ -48,7 +49,7 @@ const WithdrawAmount: React.FC<WithdrawAmountProps> = ({
       <h2 className="text-xl font-bold mb-4 text-green-500">
         Enter Amount to Withdraw
       </h2>
-      {loading && <p>Loading...</p>}
+      {loading && <LoadingIndicator />}
       {fetchError && <p className="text-red-500">{fetchError}</p>}
       {!loading && !fetchError && (
         <>

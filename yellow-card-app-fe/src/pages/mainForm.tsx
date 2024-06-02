@@ -1,12 +1,14 @@
-import React, { useState } from "react";
-import { v4 as uuidv4 } from "uuid"; // Import the UUID package
+import React, { useEffect, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 import CountrySelector from "../components/CountrySelector";
 import PaymentMethodSelector from "../components/PaymentMethodSelector";
 import WithdrawAmount from "../components/WithdrawAmount";
 import RecipientDetails from "../components/RecipientDetails";
 import ReviewWithdrawal from "../components/ReviewWithdrawal";
 import Confirmation from "../components/Confirmation";
-import SuccessModal from "../components/successPage"; // Import the SuccessModal component
+import SuccessModal from "../components/successPage";
+import LoadingIndicator from "../components/LoadingIndicator";
+import { submitPayment, fetchChannels } from "../services/apiService";
 
 const MainForm: React.FC = () => {
   const [step, setStep] = useState(1);
@@ -21,8 +23,23 @@ const MainForm: React.FC = () => {
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [submissionError, setSubmissionError] = useState<string | null>(null);
-  const [showSuccessModal, setShowSuccessModal] = useState(false); // State to show success modal
-  const [loading, setLoading] = useState(false); // State to show loading effect
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [channelId, setChannelId] = useState<string | null>(null); // To store channel ID
+  const [channels, setChannels] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchChannelsData = async () => {
+      try {
+        const data = await fetchChannels(null);
+        setChannels(data.channels);
+      } catch (error) {
+        console.error("Error fetching channels:", error);
+      }
+    };
+
+    fetchChannelsData();
+  }, []);
 
   const validateStep = () => {
     const newErrors: { [key: string]: string } = {};
@@ -35,6 +52,21 @@ const MainForm: React.FC = () => {
     }
     if (step === 3 && (!amount || !selectedCurrency)) {
       newErrors.amount = "Please enter an amount and select a currency";
+    } else if (step === 3) {
+      const selectedChannel = channels.find(
+        (channel) =>
+          channel.country === selectedCountry &&
+          channel.channelType === selectedPaymentMethod
+      );
+      if (selectedChannel) {
+        setChannelId(selectedChannel.id);
+        if (
+          parseFloat(amount) < selectedChannel.min ||
+          parseFloat(amount) > selectedChannel.max
+        ) {
+          newErrors.amount = `Amount must be between ${selectedChannel.min} and ${selectedChannel.max} ${selectedChannel.currency}`;
+        }
+      }
     }
     if (
       step === 4 &&
@@ -56,7 +88,7 @@ const MainForm: React.FC = () => {
   const prevStep = () => setStep(step - 1);
 
   const handleSubmit = async () => {
-    setLoading(true); // Start loading effect
+    setLoading(true);
     try {
       const sender = {
         name: "Sample Name",
@@ -79,36 +111,28 @@ const MainForm: React.FC = () => {
       };
 
       const requestBody = {
-        channelId: "your-channel-id", // Replace with the actual channel ID
-        sequenceId: uuidv4(), // Generate a unique sequenceId
-        amount: parseFloat(amount), // Assuming amount is provided in USD
+        channelId: channelId, // Use the actual channel ID
+        amount: parseFloat(amount), // Assuming amount is provided in local currency
         reason: recipient.reason,
         destination,
         sender,
       };
 
-      const response = await fetch("http://localhost:4000/api/submit-payment", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const response = await submitPayment(requestBody);
 
-      if (response.ok) {
-        setLoading(false); // End loading effect
-        setShowSuccessModal(true); // Show success modal
+      if (response) {
+        setLoading(false);
+        setShowSuccessModal(true);
       } else {
-        const errorData = await response.json();
-        setLoading(false); // End loading effect
-        setSubmissionError(errorData.error);
-        setStep(4); // Navigate back to the recipient details step
+        setLoading(false);
+        setSubmissionError("Failed to submit payment.");
+        setStep(4);
       }
     } catch (error) {
       console.error("Submission error:", error);
-      setLoading(false); // End loading effect
-      setSubmissionError("An unexpected error occurred. Please try again.");
-      setStep(4); // Navigate back to the recipient details step
+      setLoading(false);
+      setSubmissionError((error as Error).message); // Display network error message
+      setStep(4);
     }
   };
 
@@ -184,14 +208,12 @@ const MainForm: React.FC = () => {
 
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
-            <div className="w-full h-2 bg-gray-200">
-              <div className="h-full bg-green-500 animate-pulse"></div>
-            </div>
-            <p className="ml-2 text-green-500">Sending data...</p>
+            <LoadingIndicator />
           </div>
         )}
       </div>
-      {showSuccessModal && <SuccessModal />} {/* Show success modal */}
+
+      {showSuccessModal && <SuccessModal />}
     </div>
   );
 };

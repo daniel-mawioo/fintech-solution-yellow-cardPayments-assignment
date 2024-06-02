@@ -1,3 +1,4 @@
+// src/services/apiService.ts
 import axios, { AxiosError } from "axios";
 
 // Set the base URL for the API
@@ -40,6 +41,25 @@ export const fetchPaymentReasons = async (): Promise<string[]> => {
       const responseData = error.response?.data as { message?: string };
       console.error("Error fetching payment reasons:", responseData);
       throw new Error(responseData.message || "Error fetching payment reasons");
+    } else {
+      console.error("Network error:", (error as Error).message);
+      throw new Error("Network error");
+    }
+  }
+};
+
+// Function to submit payment
+export const submitPayment = async (paymentData: any) => {
+  try {
+    const response = await axios.post("/submit-payment", paymentData);
+
+    // Return the response data from the server
+    return response.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      const responseData = error.response?.data as { message?: string };
+      console.error("Error submitting payment:", responseData);
+      throw new Error(responseData.message || "Error submitting payment");
     } else {
       console.error("Network error:", (error as Error).message);
       throw new Error("Network error");
