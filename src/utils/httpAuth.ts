@@ -10,10 +10,14 @@ const httpAuth = (path: string, method: string, body: any) => {
   hmac.update(method);
 
   if (body) {
+    console.log(`req body: ${body}`);
     const bodyHmac = crypto
       .SHA256(JSON.stringify(body))
       .toString(crypto.enc.Base64);
     hmac.update(bodyHmac);
+
+    console.log(`bodyHmac: ${bodyHmac}`);
+
   }
 
   const hash = hmac.finalize();

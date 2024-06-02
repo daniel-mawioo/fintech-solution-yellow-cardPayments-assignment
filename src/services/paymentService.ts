@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "axios";
 import config from "../config";
-import { Destination, DestinationResponse } from "../types";
+import { Channel, Destination, DestinationResponse } from "../types";
 import httpAuth from "../utils/httpAuth";
 
 axios.defaults.baseURL = config.apiUrl;
@@ -30,10 +30,22 @@ const isAxiosError = (error: any): error is AxiosError => {
   return (error as AxiosError).isAxiosError !== undefined;
 };
 
-export const fetchChannels = async () => {
+export const fetchChannels = async (direction: any) => {
   try {
-    const response = await axios.get("/business/channels");
-    return response.data.channels;
+    const {
+      data: { channels },
+    } = await axios.get("/business/channels");
+
+    if (direction != null) {
+      const activeChannels = channels.filter(
+        (channel: Channel) =>
+          channel.status === "active" && channel.rampType === direction
+      );
+
+      return activeChannels;
+    }
+
+    return channels;
   } catch (error) {
     if (isAxiosError(error)) {
       const responseData = error.response?.data as { message?: string };
@@ -48,7 +60,7 @@ export const fetchChannels = async () => {
 
 export const fetchNetworks = async () => {
   try {
-    const response = await axios.get("/networks");
+    const response = await axios.get("/business/networks");
     return response.data.networks;
   } catch (error) {
     if (isAxiosError(error)) {
@@ -64,7 +76,7 @@ export const fetchNetworks = async () => {
 
 export const fetchRates = async () => {
   try {
-    const response = await axios.get("/rates");
+    const response = await axios.get("/business/rates");
     return response.data.rates;
   } catch (error) {
     if (isAxiosError(error)) {
@@ -83,10 +95,7 @@ export const verifyDestination = async (
   destination: Destination
 ): Promise<DestinationResponse> => {
   try {
-    const response = await axios.post(
-      `/details/${network.accountNumberType}`,
-      destination
-    );
+    const response = await axios.post(`/business/details/bank`, destination);
     return response.data;
   } catch (error) {
     if (isAxiosError(error)) {
@@ -102,7 +111,7 @@ export const verifyDestination = async (
 
 export const submitPayment = async (request: any) => {
   try {
-    const response = await axios.post("/payments", request);
+    const response = await axios.post("/business/payments", request);
     return response.data;
   } catch (error) {
     if (isAxiosError(error)) {
@@ -115,3 +124,4 @@ export const submitPayment = async (request: any) => {
     }
   }
 };
+

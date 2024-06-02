@@ -9,4 +9,5 @@ app.use(bodyParser.json());
 app.use(authMiddleware);
 app.use("/api", paymentRoutes);
 
+
 export default app;
