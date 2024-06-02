@@ -12,10 +12,12 @@ const httpAuth = (path, method, body) => {
     hmac.update(path);
     hmac.update(method);
     if (body) {
+        console.log(`req body: ${body}`);
         const bodyHmac = crypto_js_1.default
             .SHA256(JSON.stringify(body))
             .toString(crypto_js_1.default.enc.Base64);
         hmac.update(bodyHmac);
+        console.log(`bodyHmac: ${bodyHmac}`);
     }
     const hash = hmac.finalize();
     const signature = crypto_js_1.default.enc.Base64.stringify(hash);

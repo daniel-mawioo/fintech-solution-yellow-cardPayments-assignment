@@ -13,7 +13,20 @@ export const getChannels = async (req: Request, res: Response) => {
   const { direction } = req.query;
   try {
     const channels = await fetchChannels(direction);
-    res.json(channels);
+
+    // Filter active channels and extract supported countries and payment methods
+    const activeChannels = channels.filter((c: any) => c.status === "active");
+    const supportedCountries = [
+      ...new Set(activeChannels.map((c: any) => c.country)),
+    ];
+    const paymentMethods = [
+      ...new Set(activeChannels.map((c: any) => c.channelType)),
+    ];
+
+    console.log("Supported Countries:", supportedCountries);
+    console.log("Payment Methods:", paymentMethods);
+
+    res.json({ channels, supportedCountries, paymentMethods });
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
@@ -87,7 +100,7 @@ export const submitPaymentRequest = async (req: Request, res: Response) => {
 
     const request = {
       channelId: channel.id,
-      sequenceId: "234567345679",
+      sequenceId: "234567342679",
       // currency: channel.currency,
       // country: channel.country,
       // localAmount: amountLocal,
