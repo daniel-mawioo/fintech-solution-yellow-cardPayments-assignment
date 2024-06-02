@@ -24,9 +24,6 @@ export const getChannels = async (req: Request, res: Response) => {
       ...new Set(activeChannels.map((c: any) => c.channelType)),
     ];
 
-    console.log("Supported Countries:", supportedCountries);
-    console.log("Payment Methods:", paymentMethods);
-
     res.json({ channels, supportedCountries, paymentMethods });
   } catch (error) {
     if (error instanceof Error) {
@@ -72,6 +69,7 @@ export const submitPaymentRequest = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Currency rate not found for NGN" });
     }
 
+    // Where the provider has not specified a maximum, we have implemented a maximum of 20 000 USD on our API
     const amountLocal = 5000;
     const amountUSD = amountLocal / currency.buy; // Assuming currency.buy is the conversion rate
 

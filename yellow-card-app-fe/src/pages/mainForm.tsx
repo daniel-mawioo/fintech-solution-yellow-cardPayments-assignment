@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
 import CountrySelector from "../components/CountrySelector";
 import PaymentMethodSelector from "../components/PaymentMethodSelector";
 import WithdrawAmount from "../components/WithdrawAmount";
@@ -40,7 +39,6 @@ const MainForm: React.FC = () => {
 
     fetchChannelsData();
   }, []);
-
   const validateStep = () => {
     const newErrors: { [key: string]: string } = {};
 
@@ -160,6 +158,9 @@ const MainForm: React.FC = () => {
             selectedCurrency={selectedCurrency}
             setSelectedCurrency={setSelectedCurrency}
             error={errors.amount}
+            channels={channels}
+            selectedCountry={selectedCountry}
+            selectedPaymentMethod={selectedPaymentMethod}
           />
         )}
         {step === 4 && (

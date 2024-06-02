@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import CustomDropdown from "./CustomDropdown";
-import { fetchChannels } from "../services/apiService";
 import LoadingIndicator from "./LoadingIndicator";
 
 interface WithdrawAmountProps {
@@ -9,6 +8,9 @@ interface WithdrawAmountProps {
   selectedCurrency: string;
   setSelectedCurrency: (currency: string) => void;
   error?: string;
+  channels: any[];
+  selectedCountry: string;
+  selectedPaymentMethod: string;
 }
 
 const WithdrawAmount: React.FC<WithdrawAmountProps> = ({
@@ -17,20 +19,23 @@ const WithdrawAmount: React.FC<WithdrawAmountProps> = ({
   selectedCurrency,
   setSelectedCurrency,
   error,
+  channels,
+  selectedCountry,
+  selectedPaymentMethod,
 }) => {
   const [currencies, setCurrencies] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState("");
 
   useEffect(() => {
-    const fetchCurrencies = async () => {
+    const fetchCurrencies = () => {
       try {
-        const data = await fetchChannels(null);
-        // Extract unique currencies
+        // Extract unique currencies from active channels
+        const activeChannels = channels.filter(
+          (channel) => channel.status === "active"
+        );
         const uniqueCurrencies = [
-          ...new Set(
-            data.channels.map((channel: any) => channel.currency) as string[]
-          ),
+          ...new Set(activeChannels.map((channel) => channel.currency)),
         ];
         setCurrencies(uniqueCurrencies);
         setLoading(false);
@@ -42,7 +47,32 @@ const WithdrawAmount: React.FC<WithdrawAmountProps> = ({
     };
 
     fetchCurrencies();
-  }, []);
+  }, [channels]);
+
+  const validateAmount = (inputAmount: string) => {
+    const selectedChannel = channels.find(
+      (channel) =>
+        channel.country === selectedCountry &&
+        channel.channelType === selectedPaymentMethod
+    );
+
+    if (selectedChannel) {
+      if (
+        parseFloat(inputAmount) < selectedChannel.min ||
+        parseFloat(inputAmount) > selectedChannel.max
+      ) {
+        return `Amount must be between ${selectedChannel.min} and ${selectedChannel.max} ${selectedChannel.currency}`;
+      }
+    }
+    return "";
+  };
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputAmount = e.target.value;
+    setAmount(inputAmount);
+    const validationError = validateAmount(inputAmount);
+    setFetchError(validationError);
+  };
 
   return (
     <div className="flex flex-col items-center justify-center p-6">
@@ -56,9 +86,9 @@ const WithdrawAmount: React.FC<WithdrawAmountProps> = ({
           <input
             type="number"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={handleAmountChange}
             className="w-full p-3 border rounded mb-4"
-            placeholder="Amount USD"
+            placeholder="Amount"
           />
           <CustomDropdown
             options={currencies}
@@ -67,6 +97,7 @@ const WithdrawAmount: React.FC<WithdrawAmountProps> = ({
             placeholder="Select a currency"
           />
           {error && <p className="text-red-500 mt-2">{error}</p>}
+          {fetchError && <p className="text-red-500 mt-2">{fetchError}</p>}
         </>
       )}
     </div>
