@@ -15,9 +15,11 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
   error,
 }) => {
   const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(false); // Loading state
 
   useEffect(() => {
     const fetchPaymentMethods = async () => {
+      setLoading(true); // Start loading
       try {
         const data = await fetchChannels(null);
         console.log(data);
@@ -28,6 +30,7 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
       } catch (error) {
         console.error("Error fetching payment methods:", error);
       }
+      setLoading(false); // End loading
     };
 
     fetchPaymentMethods();
@@ -38,13 +41,21 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
       <h2 className="text-xl font-bold mb-4 text-green-500">
         Select Payment Method
       </h2>
-      <CustomDropdown
-        options={paymentMethods}
-        selectedOption={selectedPaymentMethod}
-        onOptionSelect={setSelectedPaymentMethod}
-        placeholder="Select a payment method"
-      />
-      {error && <p className="text-red-500 mt-2">{error}</p>}
+      {loading ? (
+        <div className="w-full flex items-center justify-center">
+          <div className="w-16 h-16 border-4 border-green-500 border-dashed rounded-full animate-spin"></div>
+        </div>
+      ) : (
+        <>
+          <CustomDropdown
+            options={paymentMethods}
+            selectedOption={selectedPaymentMethod}
+            onOptionSelect={setSelectedPaymentMethod}
+            placeholder="Select a payment method"
+          />
+          {error && <p className="text-red-500 mt-2">{error}</p>}
+        </>
+      )}
     </div>
   );
 };

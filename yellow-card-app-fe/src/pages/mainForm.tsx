@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid"; // Import the UUID package
 import CountrySelector from "../components/CountrySelector";
 import PaymentMethodSelector from "../components/PaymentMethodSelector";
 import WithdrawAmount from "../components/WithdrawAmount";
 import RecipientDetails from "../components/RecipientDetails";
 import ReviewWithdrawal from "../components/ReviewWithdrawal";
 import Confirmation from "../components/Confirmation";
+import SuccessModal from "../components/successPage"; // Import the SuccessModal component
 
 const MainForm: React.FC = () => {
   const [step, setStep] = useState(1);
@@ -19,8 +20,9 @@ const MainForm: React.FC = () => {
     reason: "",
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  const navigate = useNavigate();
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false); // State to show success modal
+  const [loading, setLoading] = useState(false); // State to show loading effect
 
   const validateStep = () => {
     const newErrors: { [key: string]: string } = {};
@@ -54,6 +56,7 @@ const MainForm: React.FC = () => {
   const prevStep = () => setStep(step - 1);
 
   const handleSubmit = async () => {
+    setLoading(true); // Start loading effect
     try {
       const sender = {
         name: "Sample Name",
@@ -76,8 +79,8 @@ const MainForm: React.FC = () => {
       };
 
       const requestBody = {
-        channelId: "your-channel-id", // You need to replace this with the actual channel ID you have
-        sequenceId: "234567342679",
+        channelId: "your-channel-id", // Replace with the actual channel ID
+        sequenceId: uuidv4(), // Generate a unique sequenceId
         amount: parseFloat(amount), // Assuming amount is provided in USD
         reason: recipient.reason,
         destination,
@@ -93,19 +96,25 @@ const MainForm: React.FC = () => {
       });
 
       if (response.ok) {
-        navigate("/success");
+        setLoading(false); // End loading effect
+        setShowSuccessModal(true); // Show success modal
       } else {
-        navigate("/error");
+        const errorData = await response.json();
+        setLoading(false); // End loading effect
+        setSubmissionError(errorData.error);
+        setStep(4); // Navigate back to the recipient details step
       }
     } catch (error) {
       console.error("Submission error:", error);
-      navigate("/error");
+      setLoading(false); // End loading effect
+      setSubmissionError("An unexpected error occurred. Please try again.");
+      setStep(4); // Navigate back to the recipient details step
     }
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="w-full max-w-md bg-white p-6 rounded-lg shadow-md">
+      <div className="w-full max-w-md bg-white p-6 rounded-lg shadow-md relative">
         {step === 1 && (
           <CountrySelector
             selectedCountry={selectedCountry}
@@ -157,7 +166,7 @@ const MainForm: React.FC = () => {
               Back
             </button>
           )}
-          {step < 6 && (
+          {step < 6 && step !== 5 && (
             <button
               onClick={nextStep}
               className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition ml-auto"
@@ -165,16 +174,24 @@ const MainForm: React.FC = () => {
               Next
             </button>
           )}
-          {step === 5 && (
-            <button
-              onClick={handleSubmit}
-              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition ml-auto"
-            >
-              Submit
-            </button>
-          )}
         </div>
+
+        {submissionError && (
+          <div className="mt-4 p-2 bg-red-100 text-red-500 border border-red-500 rounded">
+            {submissionError}
+          </div>
+        )}
+
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
+            <div className="w-full h-2 bg-gray-200">
+              <div className="h-full bg-green-500 animate-pulse"></div>
+            </div>
+            <p className="ml-2 text-green-500">Sending data...</p>
+          </div>
+        )}
       </div>
+      {showSuccessModal && <SuccessModal />} {/* Show success modal */}
     </div>
   );
 };

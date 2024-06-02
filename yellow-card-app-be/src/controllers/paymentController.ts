@@ -7,6 +7,7 @@ import {
   submitPayment,
 } from "../services/paymentService";
 import { Destination, Sender } from "../types";
+import { v4 as uuidv4 } from "uuid"; // Import the UUID package
 import crypto from "crypto";
 
 export const getChannels = async (req: Request, res: Response) => {
@@ -100,35 +101,12 @@ export const submitPaymentRequest = async (req: Request, res: Response) => {
 
     const request = {
       channelId: channel.id,
-      sequenceId: "234567342679",
-      // currency: channel.currency,
-      // country: channel.country,
-      // localAmount: amountLocal,
+      sequenceId: uuidv4(), // Generate a unique sequenceId
       amount: amountUSD,
       reason: "entertainment",
       destination,
       sender,
-      // rampType: channel.rampType, // Use the rampType directly from the channel
     };
-
-    // Stringify the request once and use it consistently
-    // const requestBody = JSON.stringify(request);
-
-    // console.log("Expected payload structure:", requestBody);
-
-    // // Calculate the bodyHmac once
-    // const hmac = crypto.createHmac("sha256", "your-secret-key"); // Replace 'your-secret-key' with your actual secret key
-    // const bodyHmac = hmac.update(requestBody).digest("hex");
-
-    // // Log the request body and bodyHmac once after calculation
-    // console.log("req body:", requestBody);
-    // console.log("bodyHmac:", bodyHmac);
-
-    // // Add the calculated bodyHmac to the request headers
-    // const headers = {
-    //   "Content-Type": "application/json",
-    //   bodyHmac: bodyHmac,
-    // };
 
     const paymentResponse = await submitPayment(request);
     res.json(paymentResponse);
