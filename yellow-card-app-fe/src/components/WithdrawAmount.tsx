@@ -69,9 +69,13 @@ const WithdrawAmount: React.FC<WithdrawAmountProps> = ({
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputAmount = e.target.value;
-    setAmount(inputAmount);
-    const validationError = validateAmount(inputAmount);
-    setFetchError(validationError);
+    if (!isNaN(Number(inputAmount))) {
+      setAmount(inputAmount);
+      const validationError = validateAmount(inputAmount);
+      setFetchError(validationError);
+    } else {
+      setFetchError("Please enter a valid number.");
+    }
   };
 
   return (
@@ -89,6 +93,8 @@ const WithdrawAmount: React.FC<WithdrawAmountProps> = ({
             onChange={handleAmountChange}
             className="w-full p-3 border rounded mb-4"
             placeholder="Amount"
+            min="0"
+            step="any"
           />
           <CustomDropdown
             options={currencies}

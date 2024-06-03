@@ -21,6 +21,14 @@ const RecipientDetails: React.FC<RecipientDetailsProps> = ({
   setRecipient,
   error,
 }) => {
+  const handleAccountNumberChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = e.target.value;
+    const numericValue = value.replace(/\D/g, ""); // Remove non-numeric characters
+    setRecipient({ ...recipient, accountNumber: numericValue });
+  };
+
   return (
     <div className="flex flex-col items-center justify-center p-6">
       <h2 className="text-xl font-bold mb-4 text-green-500">
@@ -35,11 +43,9 @@ const RecipientDetails: React.FC<RecipientDetailsProps> = ({
         placeholder="Account Holder Name"
       />
       <input
-        type="text"
+        type="tel"
         value={recipient.accountNumber}
-        onChange={(e) =>
-          setRecipient({ ...recipient, accountNumber: e.target.value })
-        }
+        onChange={handleAccountNumberChange}
         className="w-full p-3 border rounded mb-4"
         placeholder="Account Number"
       />
