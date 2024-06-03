@@ -2,7 +2,7 @@
 import axios, { AxiosError } from "axios";
 
 // Set the base URL for the API
-const API_BASE_URL = "http://localhost:4000/api";
+const API_BASE_URL = "https://jellyfish-app-j7l4t.ondigitalocean.app/api";
 
 axios.defaults.baseURL = API_BASE_URL;
 
