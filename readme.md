@@ -126,7 +126,7 @@ This project integrates the Yellow Card API using the following credentials:
 
 ## Demo Video.
 
-A demo of the solution can be accessed [here](./Yellow%20card%20Demo.mp4).
+A demo of the solution can be accessed [here](https://youtu.be/4bwhEkxb1Uw).
 
 ## Repository
 
