@@ -45,8 +45,8 @@ This project is a fintech solution built using the Yellow Card API. The solution
     ```env
     PORT=4000
     API_BASE_URL=https://sandbox.yellowcard.io/api
-    API_KEY=c5315180696a51ab885023bdc1ae3c0e
-    SECRET_KEY=81473a4ca26a28203aa4a8e26afe571bf097ec5a2a5c2acd41c83a7968c4cf3b
+    API_KEY='your api ke '
+    SECRET_KEY='your secret key'
     ```
 
 4. **Start the Backend Server**
