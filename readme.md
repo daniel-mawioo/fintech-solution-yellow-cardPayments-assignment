@@ -1,6 +1,6 @@
 # Yellow Card Fintech Solution
 
-This project is a fintech solution built using the Yellow Card API. The solution allows users to initiate and complete withdrawal transactions. The backend is built with Node.js and Express, and the frontend is built with React. This README provides an overview of the project, setup instructions, and details on the functionality and integration with the Yellow Card API.
+This project is a fintech solution built using the Yellow Card API. The solution allows users to initiate and complete withdrawal transactions. The backend is built with Node.js and Express, and the frontend is built with React. This document provides an overview of the project, setup instructions, and details on the functionality and integration with the Yellow Card API.
 
 ## Project Overview
 
